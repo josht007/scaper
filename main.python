@@ -1,0 +1,27 @@
+import requests
+from bs4 import BeautifulSoup
+
+def scrape_nba_players(url):
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        players = soup.find_all('tr')  # Find all rows, we'll filter them later
+
+        for player in players:
+            if player.find('td', {'data-stat': 'player'}) is not None:
+                name = player.find('td', {'data-stat': 'player'}).text.strip() if player.find('td', {'data-stat': 'player'}) else "Unknown"
+                position = player.find('td', {'data-stat': 'pos'}).text.strip() if player.find('td', {'data-stat': 'pos'}) else "Unknown"
+                team = player.find('td', {'data-stat': 'team_id'})  # May not exist
+                
+                if team:
+                    team = team.text.strip()
+                else:
+                    team = "N/A"
+                
+                print(f"Player: {name}, Position: {position}, Team: {team}")
+    else:
+        print(f"Error: Couldn't reach the page. Status Code: {response.status_code}")
+
+url = "https://www.basketball-reference.com/leagues/NBA_2024_per_game.html"  # example url, can use any
+scrape_nba_players(url)
